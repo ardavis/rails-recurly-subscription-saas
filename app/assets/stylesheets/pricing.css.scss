@@ -10,12 +10,12 @@
 .plan {
   background-color: #111575;
 
-  .featured-plan {
+  &.featured-plan {
     background-color: #CCAB00;
   }
 
   h2 {
     line-height: 100px;
-    color: #fff;
+    color: #ffffff;
   }
 }

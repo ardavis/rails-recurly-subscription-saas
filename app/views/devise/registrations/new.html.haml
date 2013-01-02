@@ -1,10 +1,13 @@
 %h2 Sign up
-= simple_form_for(resource, :as => resource_name, :url => registration_path(resource_name), :html => {:class => 'form-vertical' }) do |f|
+= simple_form_for(resource, as: resource_name, url: registration_path(resource_name), html: {class: 'card_form form-vertical' }) do |f|
+  %h3= "#{params[:plan].titleize if params[:plan]} Subscription Plan"
   = f.error_notification
   = display_base_errors resource
-  = f.input :name, :autofocus => true
-  = f.input :email, :required => true
-  = f.input :password, :required => true
-  = f.input :password_confirmation, :required => true
-  = f.button :submit, 'Sign up', :class => 'btn-primary'
-= render "devise/shared/links"
+  = hidden_field_tag :plan, params[:plan]
+  = f.hidden_field :customer_id
+  = f.input :first_name, autofocus: true
+  = f.input :last_name
+  = f.input :email, required: true
+  = f.input :password, required: true
+  = f.input :password_confirmation, required: true
+  = f.button :submit, 'Sign up', class: 'btn-primary'
