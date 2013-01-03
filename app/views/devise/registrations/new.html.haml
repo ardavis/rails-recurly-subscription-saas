@@ -1,5 +1,9 @@
 %h2 Sign up
-= simple_form_for(resource, as: resource_name, url: registration_path(resource_name), html: {class: 'card_form form-vertical' }) do |f|
+#card_error.alert.alert-error{style: "display:none"}
+= simple_form_for(resource, as: resource_name, url: registration_path(resource_name),
+                  html: {class: 'card_form form-vertical', 'data-subdomain' => RECURLY_SUBDOMAIN,
+                  'data-signature' => @signature,
+                  'data-ip_address' => request.remote_ip }) do |f|
   %h3= "#{params[:plan].titleize if params[:plan]} Subscription Plan"
   = f.error_notification
   = display_base_errors resource
@@ -10,4 +14,48 @@
   = f.input :email, required: true
   = f.input :password, required: true
   = f.input :password_confirmation, required: true
+
+  - if @user.card_token
+    %p Credit card acceptance is pending.
+  - else
+    .field
+      = label_tag :address1, 'Address'
+      = text_field_tag :address1, nil, name: nil
+      = text_field_tag :address2, nil, name: nil
+
+    .field
+      = label_tag :city, 'City'
+      = text_field_tag :city, nil, name: nil
+
+    .field
+      = label_tag :state, 'State'
+      = select_tag :state, options_for_select(us_states)
+
+    .field
+      = label_tag :zip, 'Zip Code'
+      = text_field_tag :zip, nil, name: nil
+
+    .field
+      = label_tag :country, 'Country'
+      = select_tag :country, country_options_for_select(selected = 'US', priority_countries = 'US')
+
+    .field
+      = label_tag :card_number, 'Credit Card Number'
+      = text_field_tag :card_number, nil, name: nil
+
+
+    .field
+      = label_tag :card_code, 'Card Security Code (CVV)'
+      = text_field_tag :card_code, nil, name: nil
+
+    .field
+      = label_tag :card_month, 'Card Expiration'
+      = select_month nil, { add_month_numbers: true }, { name: nil, id: 'card_month' }
+      = select_year nil, { start_year: Date.today.year, end_year: Date.today.year + 10 }, { name: nil, id: 'card_year' }
+
+    .field
+      = label_tag :coupon, 'Promotional Code (if any)'
+      = text_field_tag :coupon, nil, name: nil
+
+  = f.hidden_field :card_token
   = f.button :submit, 'Sign up', class: 'btn-primary'
