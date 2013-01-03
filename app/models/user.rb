@@ -1,6 +1,7 @@
 class User < ActiveRecord::Base
 
   before_create :check_recurly
+  before_destroy :cancel_subscription
 
   rolify
   # Include default devise modules. Others available are:
@@ -17,6 +18,20 @@ class User < ActiveRecord::Base
     "#{first_name.capitalize} #{last_name.capitalize}"
   end
 
+  def update_plan(role)
+    self.role_ids = []
+    self.add_role(role.name)
+    customer = Recurly::Account.find(customer_id) unless customer_id.nil?
+    unless customer_id.nil?
+      subscription = customer.subscriptions.first
+      subscription.update_attributes!(timeframe: 'now', plan_code: role.name)
+    end
+  rescue Recurly::Resource::Invalid => e
+    logger.error e.message
+    errors.add :base, "Unable to update your subscription. #{e.message}"
+    false
+  end
+
   private
 
   def check_recurly
@@ -24,6 +39,20 @@ class User < ActiveRecord::Base
   rescue Recurly::Resource::NotFound => e
     logger.error e.message
     errors.add :base, "Unable to create your subscription. #{e.message}"
+    false
+  end
+
+  def cancel_subscription
+    unless customer_id.nil?
+      customer = Recurly::Account.find(customer_id)
+      subscription = customer.subscriptions.first unless customer.nil?
+      if !subscription.nil? && subscription.state == 'active'
+        subscription.cancel
+      end
+    end
+  rescue Recurly::Resource::NotFound => e
+    logger.error e.message
+    errors.add :base, "Unable to cancel your subscription. #{e.message}"
     false
   end
 
