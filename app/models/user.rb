@@ -32,6 +32,11 @@ class User < ActiveRecord::Base
     false
   end
 
+  def expire
+    UserMailer.expire_mail(self).deliver
+    destroy
+  end
+
   private
 
   def check_recurly
